@@ -1,3 +1,11 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""
+Created on Tue Aug 13 14:39:02 2024
+
+@author: Watson
+"""
+
 from tkinter import *
 import random
 
@@ -74,14 +82,15 @@ class GUIFreezeableDie(GUIDie):
         self.valueList = [1, 2, 3, 4, 5, 6]
         self.colorList= (['red'] + ['black']) * 3
     
+    #... note: it shows how to share the data between two classes
     def freeze(self, rollButton, freezeButton, dice, \
-               actionLabel, currentAttempt, totalAttempt, scoreLabel, update_score_callback):
+               actionLabel, currentAttempt, scoreLabel, update_score_callback):
         #... change the status of the die to be frozen
         self.isFrozen = True
         self.configure(bg='gray')
         #... Disable the freeze button
         freezeButton['state'] = DISABLED
-        #... initialization
+        #... count frozen dice and current score
         numFrozen = 0
         updatedScore = 0
         #... check number of frozen dice, and total score after the freeze
@@ -91,7 +100,7 @@ class GUIFreezeableDie(GUIDie):
                 updatedScore += dice[n].get_top()
         if numFrozen == len(dice):
             rollButton['state'] = DISABLED
-            if currentAttempt == totalAttempt:
+            if currentAttempt == numAttempt:
                 actionLabel['text'] = 'It is the last attempt. Click stop.'
             else:
                 actionLabel['text'] = 'All dice are frozen. Click stop to next attempt.'
@@ -100,8 +109,8 @@ class GUIFreezeableDie(GUIDie):
             rollButton['state'] = ACTIVE
 
         #... accumulate the top number into the score of the current attempt
-        scoreLabel['text'] = 'Attempt #{} Score: {}'.format\
-                                  (currentAttempt, updatedScore)
+        # scoreLabel['text'] = 'Attempt #{} Score: {}'.format\
+        #                           (currentAttempt, updatedScore)
         
         # Use the callback to update the score in DecathDiscus
         update_score_callback(updatedScore)
@@ -135,7 +144,7 @@ class GUIFreezeableDie(GUIDie):
             self.draw()
 
 class DecathDiscus(Frame):
-    '''frame for a game of Shot Put'''
+    '''frame for a game of Discus'''
 
     def __init__(self, master, name):
         '''DecathDiscus(master,name) -> DecathDiscus
@@ -149,46 +158,46 @@ class DecathDiscus(Frame):
         # label for action message at the bottom
         self.actionLabel = Label(self, text="Click Roll button to start", font=('Arial', 18))
         self.actionLabel.grid(row=3, columnspan=5)
-        # initialize game data
+        # initialize game data: attempt, current score, high score among attempts
         self.attempt = 1
         self.score = 0
         self.hscore = 0
-        #... max number of attempts
-        self.numAttempt = 3
-        # set up score and high score
+        # set up lables of current score and high score
         self.scoreLabel = Label(self, text='Attempt #1 Score: 0', font=('Arial', 18))
         self.scoreLabel.grid(row=0, column=2, columnspan=3)
         self.hscoreLabel = Label(self, text='High Score: {}'.format(0), font=('Arial', 18))
         self.hscoreLabel.grid(row=0, column=5, columnspan=2, sticky=E)
-        # initialize dice and freezeButton lists
+        # initialize list of dice
         self.dice = []
+        #... initialize the list of freezeButton, each component is a freezeButton
         self.freezeButton = []
+        #... set up dice and freezeButton list
         for n in range(5):
             #... set up die list
             die = GUIFreezeableDie(self)
             self.dice.append(die)
             die.grid(row=1, column=n)
-            #... create freeze button
+            #... set up freeze button
             freeze_button = Button(self, text='Freeze', state=DISABLED)
             freeze_button.grid(row=2, column=n, columnspan=1)
             self.freezeButton.append(freeze_button)
-            
-            #... Now that freeze_button is fully defined, assign the lambda command
+            #... note: the button should be config to share data between two classes
             freeze_button.config(command=lambda d=die, f=freeze_button: \
                     d.freeze(self.rollButton, f, self.dice, \
-                             self.actionLabel, self.attempt, self.numAttempt, \
+                             self.actionLabel, self.attempt, \
                              self.scoreLabel, self.update_score))
-            
-        # set up 3 buttons: freeze, roll, stop/foul
+        
+        # set up buttons: roll, stop
         self.rollButton = Button(self, text='Roll', command=self.roll)
         self.rollButton.grid(row=1, column=len(self.dice), columnspan=1)
         self.stopButton = Button(self, text='Stop', state=DISABLED, command=self.stop)
         self.stopButton.grid(row=2, column=len(self.dice), columnspan=1)
     
+    #... note: recall the data from the other class back to current
     def update_score(self, new_score):
         '''Updates the score and the score label'''
         self.score = new_score
-        # self.scoreLabel['text'] = f'Attempt #{self.attempt} Score: {self.score}'
+        self.scoreLabel['text'] = f'Attempt #{self.attempt} Score: {self.score}'
 
     def roll(self):
         '''DecathShotPut.roll()
@@ -231,10 +240,6 @@ class DecathDiscus(Frame):
         # if numFrozen == len(self.dice):
         #     self.game_over()
 
-        #... score needs to be updated every time to reflect the current score
-        # self.scoreLabel['text'] = 'Attempt #' + str(self.attempt) \
-        #                         + ' Score: ' + str(self.score)
-
         #... disable roll after it is clicked
         self.rollButton['state'] = DISABLED
         #... enable stop after roll
@@ -249,16 +254,17 @@ class DecathDiscus(Frame):
         
         #... update score label
         self.hscoreLabel['text'] = 'High Score: {}'.format(self.hscore)
+        #... initialize score
+        self.score = 0
         
         #... the last attempt
-        if self.attempt == self.numAttempt:
+        if self.attempt == numAttempt:
             #... stop game
             self.game_over()
         else:
             #... update label
             self.actionLabel['text'] = "Click Roll button to start"
-            #... initialize score
-            self.score = 0
+            
             #... remove dice to start a new attempt
             for n in range(len(self.dice)):
                 #... count the score
@@ -276,6 +282,7 @@ class DecathDiscus(Frame):
             #... attempt + 1
             self.attempt += 1
             
+            self.score = 0
             #... when stop, reset score and increase an attempt
             self.scoreLabel['text'] = 'Attempt #{} Score: {}'.format\
                                       (self.attempt, self.score)
@@ -283,7 +290,7 @@ class DecathDiscus(Frame):
     def foul(self):
         '''DecathShotPut.foul()
         handler method for the foul button click'''
-        if self.attempt == self.numAttempt:
+        if self.attempt == numAttempt:
             #... disable foul button
             self.foulButton['state'] = DISABLED
             #... stop game
@@ -297,7 +304,7 @@ class DecathDiscus(Frame):
             for idice in self.dice:
                 idice.erase()
             #... activate roll if not last attempt
-            if self.attempt <= self.numAttempt:
+            if self.attempt <= numAttempt:
                 self.rollButton['state'] = ACTIVE
             #... remove old buttons
             self.foulButton.grid_remove()
@@ -317,7 +324,9 @@ class DecathDiscus(Frame):
             self.freezeButton[n]['state'] = DISABLED
         #... show message
         self.actionLabel['text'] = 'Game over'
-
+        
+#... define the maxium attemptes allowed
+numAttempt = 3
 # play the game
 name = input("Enter your name: ")
 root = Tk()
