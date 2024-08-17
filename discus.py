@@ -1,11 +1,3 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-"""
-Created on Tue Aug 13 14:39:02 2024
-
-@author: Watson
-"""
-
 from tkinter import *
 import random
 
@@ -165,8 +157,8 @@ class DecathDiscus(Frame):
         # set up lables of current score and high score
         self.scoreLabel = Label(self, text='Attempt #1 Score: 0', font=('Arial', 18))
         self.scoreLabel.grid(row=0, column=2, columnspan=3)
-        self.hscoreLabel = Label(self, text='High Score: {}'.format(0), font=('Arial', 18))
-        self.hscoreLabel.grid(row=0, column=5, columnspan=2, sticky=E)
+        self.hscoreLabel = Label(self, text='High Score: {:02d}'.format(0), font=('Arial', 18))
+        self.hscoreLabel.grid(row=0, column=5, columnspan=3, sticky=E)
         # initialize list of dice
         self.dice = []
         #... initialize the list of freezeButton, each component is a freezeButton
@@ -189,9 +181,9 @@ class DecathDiscus(Frame):
         
         # set up buttons: roll, stop
         self.rollButton = Button(self, text='Roll', command=self.roll)
-        self.rollButton.grid(row=1, column=len(self.dice), columnspan=1)
+        self.rollButton.grid(row=1, column=len(self.dice), columnspan=3)
         self.stopButton = Button(self, text='Stop', state=DISABLED, command=self.stop)
-        self.stopButton.grid(row=2, column=len(self.dice), columnspan=1)
+        self.stopButton.grid(row=2, column=len(self.dice), columnspan=3)
     
     #... note: recall the data from the other class back to current
     def update_score(self, new_score):
@@ -253,7 +245,7 @@ class DecathDiscus(Frame):
             self.hscore = self.score
         
         #... update score label
-        self.hscoreLabel['text'] = 'High Score: {}'.format(self.hscore)
+        self.hscoreLabel['text'] = 'High Score: {:2d}'.format(self.hscore)
         #... initialize score
         self.score = 0
         
